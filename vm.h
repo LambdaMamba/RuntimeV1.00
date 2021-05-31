@@ -13,6 +13,10 @@ extern uintptr_t runtime_va_start;
 extern uintptr_t kernel_offset;
 extern uintptr_t load_pa_start;
 
+extern uintptr_t load_pa_start_nvm;
+extern uintptr_t nvm_size_global;
+
+
 /* Eyrie is for Sv39 */
 static inline uintptr_t satp_new(uintptr_t pa)
 {
@@ -29,9 +33,19 @@ static inline uintptr_t __va(uintptr_t pa)
   return (pa - load_pa_start) + EYRIE_LOAD_START;
 }
 
+static inline uintptr_t __va_nvm(uintptr_t pa)
+{
+  return (pa - load_pa_start_nvm) + NVM_LOAD_START;
+}
+
 static inline uintptr_t __pa(uintptr_t va)
 {
   return (va - EYRIE_LOAD_START) + load_pa_start;
+}
+
+static inline uintptr_t __pa_nvm(uintptr_t va)
+{
+  return (va - NVM_LOAD_START) + load_pa_start_nvm;
 }
 
 static inline pte pte_create(uintptr_t ppn, int type)
@@ -73,6 +87,9 @@ extern pte kernel_l3_page_table[];
 /* page tables for loading physical memory */
 extern pte load_l2_page_table[];
 extern pte load_l3_page_table[];
+
+extern pte load_l2_page_table_nvm[];
+extern pte load_l3_page_table_nvm[];
 
 /* Program break */
 extern uintptr_t program_break;

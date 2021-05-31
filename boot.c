@@ -1,5 +1,5 @@
 #include <asm/csr.h>
-
+#include <stdio.h>
 #include "printf.h"
 #include "interrupt.h"
 #include "syscall.h"
@@ -19,6 +19,10 @@ extern uintptr_t shared_buffer_size;
 uintptr_t utm_base;
 size_t utm_size;
 
+
+uintptr_t nvm_base;
+size_t nvm_size;
+
 /* defined in entry.S */
 extern void* encl_trap_handler;
 
@@ -37,6 +41,17 @@ map_physical_memory(uintptr_t dram_base,
   assert(RISCV_GET_PT_INDEX(ptr, 1) != RISCV_GET_PT_INDEX(runtime_va_start, 1));
   map_with_reserved_page_table(dram_base, dram_size,
       ptr, load_l2_page_table, load_l3_page_table);
+}
+
+void
+map_physical_memory_nvm(uintptr_t nvm_base,
+                    uintptr_t nvm_size)
+{
+  uintptr_t ptr = NVM_LOAD_START;
+
+  map_with_reserved_page_table_nvm(nvm_base, nvm_size,
+      ptr, load_l2_page_table_nvm, load_l3_page_table_nvm);
+  //printf("finished map physical memory nvm\n");
 }
 
 void
@@ -76,6 +91,12 @@ void
 init_freemem()
 {
   spa_init(freemem_va_start, freemem_size);
+}
+
+void
+init_freemem_nvm()
+{
+  spa_init_nvm(NVM_LOAD_START, nvm_size);
 }
 
 #endif // USE_FREEMEM
@@ -119,22 +140,50 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
 {
   /* set initial values */
   load_pa_start = dram_base;
+
+    //~~~ for now, pretend an eigth and a bit of dram is nvm ~~~
+  nvm_size = (dram_size/8) ;
+
+  nvm_size_global = nvm_size;
+
+  uintptr_t dram_tmp = dram_size;
+
+  dram_size = dram_size - nvm_size;
+
+  //~~~ nvm_base is right after dram region ~~~
+  nvm_base = (dram_base + dram_size);
+
+
   shared_buffer = utm_vaddr;
   shared_buffer_size = utm_size;
   runtime_va_start = (uintptr_t) &rt_base;
   kernel_offset = runtime_va_start - runtime_paddr;
 
-  debug("UTM : 0x%lx-0x%lx (%u KB)", utm_vaddr, utm_vaddr+utm_size, utm_size/1024);
-  debug("DRAM: 0x%lx-0x%lx (%u KB)", dram_base, dram_base + dram_size, dram_size/1024);
+  printf("UTM : 0x%lx-0x%lx (%u KB)\n", utm_vaddr, utm_vaddr+utm_size, utm_size/1024);
+  printf("Original DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_tmp, dram_tmp/1024);
+
+  printf("DRAM after giving portion to NVM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_size, dram_size/1024);
+
+  printf("NVM: 0x%lx-0x%lx (%u KB)\n", nvm_base, nvm_base + nvm_size, nvm_size/1024);
+
 #ifdef USE_FREEMEM
   freemem_va_start = __va(free_paddr);
   freemem_size = dram_base + dram_size - free_paddr;
 
-  debug("FREE: 0x%lx-0x%lx (%u KB), va 0x%lx", free_paddr, dram_base + dram_size, freemem_size/1024, freemem_va_start);
+//  debug("FREE: 0x%lx-0x%lx (%u KB), va 0x%lx", free_paddr, dram_base + dram_size, freemem_size/1024, freemem_va_start);
+
+  printf("FREE: 0x%lx-0x%lx (%u KB), va 0x%lx\n", free_paddr, dram_base + dram_size, freemem_size/1024, freemem_va_start);
+  printf("EYRIE_LOAD_START = 0x%lx\n", EYRIE_LOAD_START);
+  printf("VA of DRAM end = 0x%lx\n", __va(dram_base + dram_size));
+
+  load_pa_start_nvm = nvm_base;
+  printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
 
   /* remap kernel VA */
   remap_kernel_space(runtime_paddr, user_paddr - runtime_paddr);
   map_physical_memory(dram_base, dram_size);
+
+  map_physical_memory_nvm(nvm_base, nvm_size);
 
   /* switch to the new page table */
   csr_write(satp, satp_new(kernel_va_to_pa(root_page_table)));
@@ -144,6 +193,8 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
 
   /* initialize free memory */
   init_freemem();
+
+  init_freemem_nvm();
 
   //TODO: This should be set by walking the userspace vm and finding
   //highest used addr. Instead we start partway through the anon space

@@ -239,12 +239,12 @@ void handle_syscall(struct encl_ctx* ctx)
     break;
 
   case(SYS_mmap):
-    ret = syscall_mmap((void*) arg0, (size_t)arg1, (int)arg2,
+    ret = syscall_mmap((uintptr_t) arg0, (size_t)arg1, (int)arg2,
                        (int)arg3, (int)arg4, (__off_t)arg5);
     break;
 
   case(SYS_munmap):
-    ret = syscall_munmap((void*) arg0, (size_t)arg1);
+    ret = syscall_munmap((uintptr_t) arg0, (size_t)arg1, (int)arg2);
     break;
 
   case(SYS_exit):

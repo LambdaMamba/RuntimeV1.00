@@ -4,6 +4,9 @@ uintptr_t runtime_va_start;
 uintptr_t kernel_offset;
 uintptr_t load_pa_start;
 
+uintptr_t load_pa_start_nvm;
+uintptr_t nvm_size_global;
+
 #ifdef USE_FREEMEM
 /* root page table */
 pte root_page_table[BIT(RISCV_PT_INDEX_BITS)] __attribute__((aligned(RISCV_PAGE_SIZE)));
@@ -13,6 +16,9 @@ pte kernel_l3_page_table[BIT(RISCV_PT_INDEX_BITS)] __attribute__((aligned(RISCV_
 /* page tables for loading physical memory */
 pte load_l2_page_table[BIT(RISCV_PT_INDEX_BITS)] __attribute__((aligned(RISCV_PAGE_SIZE)));
 pte load_l3_page_table[BIT(RISCV_PT_INDEX_BITS)] __attribute__((aligned(RISCV_PAGE_SIZE)));
+
+pte load_l2_page_table_nvm[BIT(RISCV_PT_INDEX_BITS)] __attribute__((aligned(RISCV_PAGE_SIZE)));
+pte load_l3_page_table_nvm[BIT(RISCV_PT_INDEX_BITS)] __attribute__((aligned(RISCV_PAGE_SIZE)));
 
 /* Program break */
 uintptr_t program_break;
@@ -25,5 +31,4 @@ size_t freemem_size;
 /* shared buffer */
 uintptr_t shared_buffer;
 uintptr_t shared_buffer_size;
-
 

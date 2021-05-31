@@ -33,6 +33,8 @@
 /* Starting address of the enclave memory */
 
 #if __riscv_xlen == 64
+#define NVM_LOAD_START 0xfffffffc00000000
+#define NVM_MAP_START 0x0000001000000000
 #define EYRIE_LOAD_START 0xffffffff00000000
 #define EYRIE_PAGING_START 0xffffffff40000000
 #define EYRIE_UNTRUSTED_START 0xffffffff80000000

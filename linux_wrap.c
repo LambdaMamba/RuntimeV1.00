@@ -99,22 +99,38 @@ uintptr_t linux_uname(void* buf){
   return ret;
 }
 
-uintptr_t syscall_munmap(void *addr, size_t length){
+uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){
   uintptr_t ret = (uintptr_t)((void*)-1);
 
-  free_pages(vpn((uintptr_t)addr), length/RISCV_PAGE_SIZE);
-  ret = 0;
+
+  if(fd==-1){
+    printf("Before munmap, DRAM Mapping VA is 0x%lx, PA is 0x%lx\n", addr, translate(addr));
+    free_pages(vpn(addr), length/RISCV_PAGE_SIZE);
+    ret = 0;
+    printf("After munmap %d DRAM pages available\n", spa_available());
+    printf("After munmap, DRAM Mapping VA is 0x%lx, PA is 0x%lx (there is no mapping)\n", addr, translate(addr));
+  } else if(fd==-2){
+    printf("Before munmap, NVM Mapping VA is 0x%lx, PA is 0x%lx\n", addr, translate_nvm(addr));
+    free_pages_nvm(vpn(addr), length/RISCV_PAGE_SIZE);
+    ret = 0;
+    printf("After munmap %d NVM pages available\n", spa_available_nvm());
+    printf("After munmap, DRAM Mapping VA is 0x%lx, PA is 0x%lx (there is no mapping)\n", addr, translate_nvm(addr));
+    
+  }
   return ret;
 }
 
-uintptr_t syscall_mmap(void *addr, size_t length, int prot, int flags,
+uintptr_t syscall_mmap(uintptr_t addr, size_t length, int prot, int flags,
                  int fd, __off_t offset){
   uintptr_t ret = (uintptr_t)((void*)-1);
 
-  int pte_flags = PTE_U | PTE_A;
 
-  if(flags != (MAP_ANONYMOUS | MAP_PRIVATE) || fd != -1){
+  int pte_flags = PTE_U | PTE_A;
+  printf("[MY_RUNTIME] flags = %d, (MAP_ANONYMOUS | MAP_PRIVATE) = %d, fd = %d \n", flags, (MAP_ANONYMOUS | MAP_PRIVATE), fd);
+
+  if(flags != (MAP_ANONYMOUS | MAP_PRIVATE) || ((fd != -1)&&(fd != -2)) ){
     // we don't support mmaping any other way yet
+    printf("going to done flags: %d\n", flags);
     goto done;
   }
 
@@ -126,41 +142,77 @@ uintptr_t syscall_mmap(void *addr, size_t length, int prot, int flags,
   if(prot & PROT_EXEC)
     pte_flags |= PTE_X;
 
-
-
-  // Find a continuous VA space that will fit the req. size
+    // Find a continuous VA space that will fit the req. size
   int req_pages = vpn(PAGE_UP(length));
 
-  // Do we have enough available phys pages?
-  if( req_pages > spa_available()){
-    goto done;
-  }
+  if(fd==-1){
+          // Do we have enough available phys pages?
+          if( req_pages > spa_available()){
+            goto done;
+          }
+          printf("Before mmap %d dram pages available\n", spa_available());
 
-  // Start looking at EYRIE_ANON_REGION_START for VA space
-  uintptr_t starting_vpn = vpn(EYRIE_ANON_REGION_START);
-  uintptr_t valid_pages;
-  while((starting_vpn + req_pages) <= EYRIE_ANON_REGION_END){
-    valid_pages = test_va_range(starting_vpn, req_pages);
+          // Start looking at EYRIE_ANON_REGION_START for VA space
+          uintptr_t starting_vpn = vpn(EYRIE_ANON_REGION_START);
+          printf("dram vpn is 0x%lx\n", starting_vpn);
+          uintptr_t valid_pages;
+          while((starting_vpn + req_pages) <= EYRIE_ANON_REGION_END){
+            valid_pages = test_va_range(starting_vpn, req_pages);
 
-    if(req_pages == valid_pages){
-      // Set a successful value if we allocate
-      // TODO free partial allocation on failure
-      if(alloc_pages(starting_vpn, req_pages, pte_flags) == req_pages){
-        ret = starting_vpn << RISCV_PAGE_BITS;
-      }
-      break;
-    }
-    else
-      starting_vpn += valid_pages + 1;
+            if(req_pages == valid_pages){
+              // Set a successful value if we allocate
+              // TODO free partial allocation on failure
+              if(alloc_pages(starting_vpn, req_pages, pte_flags) == req_pages){
+                ret = starting_vpn << RISCV_PAGE_BITS;
+              }
+              break;
+            }
+            else
+              starting_vpn += valid_pages + 1;
+          }
+
+          printf("After mmap %d dram pages available\n", spa_available());
+
+          printf("DRAM Mapping VA is 0x%lx, PA is 0x%lx\n", addr, translate(addr));
+
+  } else if(fd==-2){
+    // Do we have enough available phys pages?
+          if( req_pages > spa_available_nvm()){
+            goto done;
+          }
+
+          printf("Before mmap %d nvm pages available\n", spa_available_nvm());
+
+          // Start looking at EYRIE_ANON_REGION_START for VA space
+          uintptr_t starting_vpn = vpn(NVM_MAP_START);
+          printf("nvm vpn is 0x%lx\n", starting_vpn);
+          uintptr_t valid_pages;
+          while((starting_vpn + req_pages) <= NVM_LOAD_START){
+            valid_pages = test_va_range_nvm(starting_vpn, req_pages);
+
+            if(req_pages == valid_pages){
+              // Set a successful value if we allocate
+              // TODO free partial allocation on failure
+              if(alloc_pages_nvm(starting_vpn, req_pages, pte_flags) == req_pages){
+                ret = starting_vpn << RISCV_PAGE_BITS;
+              }
+              break;
+            }
+            else
+              starting_vpn += valid_pages + 1;
+          }
+          printf("After mmap %d nvm pages available\n", spa_available_nvm());
+          printf("NVM Mapping VA is 0x%lx, PA is 0x%lx\n", addr, translate_nvm(addr));
+
+
   }
 
  done:
-  print_strace("[runtime] [mmap]: addr: 0x%p, length %lu, prot 0x%x, flags 0x%x, fd %i, offset %lu (%li pages %x) = 0x%p\r\n", addr, length, prot, flags, fd, offset, req_pages, pte_flags, ret);
+  print_strace("[runtime] [mmap]: addr: 0x%lx, length %lu, prot 0x%x, flags 0x%x, fd %i, offset %lu (%li pages %x) = 0x%p\r\n", addr, length, prot, flags, fd, offset, req_pages, pte_flags, ret);
 
   // If we get here everything went wrong
   return ret;
 }
-
 
 uintptr_t syscall_brk(void* addr){
   // Two possible valid calls to brk we handle:
