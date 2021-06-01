@@ -114,7 +114,7 @@ uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){
     free_pages_nvm(vpn(addr), length/RISCV_PAGE_SIZE);
     ret = 0;
     printf("After munmap %d NVM pages available\n", spa_available_nvm());
-    printf("After munmap, DRAM Mapping VA is 0x%lx, PA is 0x%lx (there is no mapping)\n", addr, translate_nvm(addr));
+    printf("After munmap, NVM Mapping VA is 0x%lx, PA is 0x%lx (there is no mapping)\n", addr, translate_nvm(addr));
     
   }
   return ret;
