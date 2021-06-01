@@ -178,6 +178,9 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
 
   load_pa_start_nvm = nvm_base;
   printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
+  
+  printf("Runtime_paddr: 0x%lx, User_paddr: 0x%lx, user_paddr - runtime_paddr: 0x%lx\n", runtime_paddr, user_paddr, user_paddr - runtime_paddr);
+
 
   /* remap kernel VA */
   remap_kernel_space(runtime_paddr, user_paddr - runtime_paddr);
