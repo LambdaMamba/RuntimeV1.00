@@ -4,21 +4,12 @@
 #include <syscall.h>
 #include <unistd.h>
 #include <sys/mman.h>
-
 #include <stdio.h>
 #include "syscall_nums.h"
 
-
 #define OCALL_PRINT_STRING 1
-
-
-
 unsigned long ocall_print_string(char* string);
-
-
 char *my_strcpy(char *strDest, const char *strSrc);
-
-
 int main(){
 	unsigned long size = (0x1000)*5;
 	char * mmap_region = (char*)SYSCALL(
@@ -38,7 +29,6 @@ int main(){
         }
 		my_strcpy(mmap_region, "SUCCESSFULLY WROTE INTO DRAM REGION");
 		ocall_print_string(mmap_region);
-
 
 	    char * mmap_region2 = (char*)SYSCALL(
 	           SYS_mmap,
@@ -63,25 +53,19 @@ int main(){
   	int unmap_result = SYSCALL(SYS_munmap, mmap_region, size, -1,0,0);
  	 if (unmap_result != 0) {
 		 ocall_print_string("munmap of DRAM failed");
-    
   	} else {
 		ocall_print_string("munmap of DRAM success");
-      
   	}
-
-
-	  	
+	
 	int unmap_result2 = SYSCALL(SYS_munmap, mmap_region2, size, -2,0,0);
  	 if (unmap_result2 != 0) {
                  ocall_print_string("munmap of NVM failed");
   	} else {
                  ocall_print_string("munmap of NVM sucess");
-
   	}
 
 	my_strcpy(mmap_region, "SUCCESSFULLY WROTE INTO DRAM REGION");
 	my_strcpy(mmap_region2, "SUCCESSFULLY WROTE INTO NVM REGION");
-
   EAPP_RETURN(0);
 }
 
@@ -95,11 +79,8 @@ char *my_strcpy(char *strDest, const char *strSrc)
                 {
                     if (strSrc == NULL || strDest == NULL)
                         return NULL;
-
                     char *dest = strDest;
-
                     while ((*strDest++ = *strSrc++) != '\0');
-
                     return dest;
                 }
 
