@@ -99,6 +99,15 @@ uintptr_t linux_uname(void* buf){
   return ret;
 }
 
+
+
+
+uintptr_t syscall_nvmcreate(uintptr_t addr, size_t size){
+  sbi_nvmcreate(addr, size);
+  return ret;
+
+}
+
 uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){
   uintptr_t ret = (uintptr_t)((void*)-1);
 

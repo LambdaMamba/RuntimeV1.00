@@ -21,6 +21,7 @@
 #define SBI_SM_GET_SEALING_KEY   3003
 #define SBI_SM_STOP_ENCLAVE      3004
 #define SBI_SM_EXIT_ENCLAVE      3006
+#define SBI_SM_NVM_CREATE        3008
 #define SBI_SM_CALL_PLUGIN       4000
 
 /* Plugin IDs and Call IDs */
@@ -38,6 +39,8 @@ void
 sbi_exit_enclave(uint64_t retval);
 uintptr_t
 sbi_random();
+uintptr_t
+sbi_nvmcreate(uintptr_t addr, size_t size);
 uintptr_t
 sbi_query_multimem(size_t *size);
 uintptr_t

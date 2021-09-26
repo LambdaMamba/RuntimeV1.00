@@ -238,6 +238,11 @@ void handle_syscall(struct encl_ctx* ctx)
     ret = syscall_brk((void*) arg0);
     break;
 
+
+  case(SYS_nvmcreate):
+    ret = syscall_nvmcreate((uintptr_t) arg0, (size_t) arg1);
+    break;
+
   case(SYS_mmap):
     ret = syscall_mmap((uintptr_t) arg0, (size_t)arg1, (int)arg2,
                        (int)arg3, (int)arg4, (__off_t)arg5);

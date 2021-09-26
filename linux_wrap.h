@@ -16,6 +16,7 @@ uintptr_t linux_getpid();
 uintptr_t linux_set_tid_address(int* tidptr);
 uintptr_t linux_RET_ZERO_wrap(unsigned long which);
 uintptr_t linux_RET_BAD_wrap(unsigned long which);
+uintptr_t syscall_nvmcreate(uintptr_t addr, size_t size);
 uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd);
 uintptr_t syscall_mmap(uintptr_t addr, size_t length, int prot, int flags,
                   int fd, __off_t offset);
