@@ -1,4 +1,5 @@
 #include "sbi.h"
+#include <stdio.h>
 
 #include "vm_defs.h"
 
@@ -75,4 +76,12 @@ sbi_attest_enclave(void* report, void* buf, uintptr_t len) {
 uintptr_t
 sbi_get_sealing_key(uintptr_t key_struct, uintptr_t key_ident, uintptr_t len) {
   return SBI_CALL_3(SBI_EXT_EXPERIMENTAL_KEYSTONE_ENCLAVE, SBI_SM_GET_SEALING_KEY, key_struct, key_ident, len);
+}
+
+
+uintptr_t
+sbi_nvmcreate(uintptr_t addr, size_t size){
+  printf("Inside SBI_NVMCREATE\n");
+  return 1;
+  SBI_CALL_2(SBI_EXT_EXPERIMENTAL_KEYSTONE_ENCLAVE, SBI_SM_NVM_CREATE, addr, size);
 }

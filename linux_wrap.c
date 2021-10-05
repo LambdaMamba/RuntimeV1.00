@@ -103,7 +103,9 @@ uintptr_t linux_uname(void* buf){
 
 
 uintptr_t syscall_nvmcreate(uintptr_t addr, size_t size){
+  printf("Called NVMcreate, received addr: 0x%lx, size: 0x%lx\n", addr, size);
   sbi_nvmcreate(addr, size);
+  uintptr_t ret = 1;
   return ret;
 
 }

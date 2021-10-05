@@ -553,5 +553,6 @@
 #define SYS_pkey_mprotect 288
 #define SYS_pkey_alloc 289
 #define SYS_pkey_free 290
+#define SYS_nvmcreate 291
 #define SYS_sysriscv __NR_arch_specific_syscall
 #define SYS_riscv_flush_icache (__NR_sysriscv + 15)
