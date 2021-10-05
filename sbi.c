@@ -81,7 +81,6 @@ sbi_get_sealing_key(uintptr_t key_struct, uintptr_t key_ident, uintptr_t len) {
 
 uintptr_t
 sbi_nvmcreate(uintptr_t addr, size_t size){
-  printf("Inside SBI_NVMCREATE\n");
-  return 1;
-  SBI_CALL_2(SBI_EXT_EXPERIMENTAL_KEYSTONE_ENCLAVE, SBI_SM_NVM_CREATE, addr, size);
+  printf("[RUNTIME] Inside SBI_NVMCREATE\n");
+  return SBI_CALL_2(SBI_EXT_EXPERIMENTAL_KEYSTONE_ENCLAVE, SBI_SM_NVM_CREATE, addr, size);
 }
