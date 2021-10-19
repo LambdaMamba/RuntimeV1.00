@@ -142,8 +142,7 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   load_pa_start = dram_base;
 
     //~~~ for now, pretend an eigth and a bit of dram is nvm ~~~
-  //nvm_size = (dram_size/8) ;
-  nvm_size = 0;
+  nvm_size = (dram_size/8) ;
 
   nvm_size_global = nvm_size;
 
@@ -161,11 +160,11 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   kernel_offset = runtime_va_start - runtime_paddr;
 
   printf("UTM : 0x%lx-0x%lx (%u KB)\n", utm_vaddr, utm_vaddr+utm_size, utm_size/1024);
-  printf("DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_tmp, dram_tmp/1024);
+  printf("Original DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_tmp, dram_tmp/1024);
 
- // printf("DRAM after giving portion to NVM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_size, dram_size/1024);
+  printf("DRAM after giving portion to NVM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_size, dram_size/1024);
 
-//  printf("NVM: 0x%lx-0x%lx (%u KB)\n", nvm_base, nvm_base + nvm_size, nvm_size/1024);
+  printf("NVM: 0x%lx-0x%lx (%u KB)\n", nvm_base, nvm_base + nvm_size, nvm_size/1024);
 
 #ifdef USE_FREEMEM
   freemem_va_start = __va(free_paddr);
@@ -178,13 +177,13 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   printf("VA of DRAM end = 0x%lx\n", __va(dram_base + dram_size));
 
   load_pa_start_nvm = nvm_base;
-  //printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
+  printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
 
   /* remap kernel VA */
   remap_kernel_space(runtime_paddr, user_paddr - runtime_paddr);
   map_physical_memory(dram_base, dram_size);
 
-  //map_physical_memory_nvm(nvm_base, nvm_size);
+  map_physical_memory_nvm(nvm_base, nvm_size);
 
   /* switch to the new page table */
   csr_write(satp, satp_new(kernel_va_to_pa(root_page_table)));
@@ -195,7 +194,7 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   /* initialize free memory */
   init_freemem();
 
-  //init_freemem_nvm();
+  init_freemem_nvm();
 
   //TODO: This should be set by walking the userspace vm and finding
   //highest used addr. Instead we start partway through the anon space
