@@ -39,14 +39,14 @@ __continue_walk_create(pte* root, uintptr_t addr, pte* pte)
 static pte*
 __continue_walk_create_nvm(pte* root, uintptr_t addr, pte* pte)
 {
-  printf("__continue_walk_create_nvm\n");
+  //printf("__continue_walk_create_nvm\n");
   uintptr_t new_page = spa_get_zero_nvm();
   assert(new_page);
 
   unsigned long free_ppn = ppn(__pa_nvm(new_page));
-  printf("free_ppn is 0x%lx\n", free_ppn);
+  //printf("free_ppn is 0x%lx\n", free_ppn);
   *pte = ptd_create(free_ppn);
-  printf("ptd_created\n");
+  //printf("ptd_created\n");
   return __walk_create_nvm(root, addr);
 }
 
@@ -58,13 +58,13 @@ __walk_internal(pte* root, uintptr_t addr, int create)
   for (i = 1; i < RISCV_PT_LEVELS; i++)
   {
     size_t idx = RISCV_GET_PT_INDEX(addr, i);
-    printf("DRAM page table index is %ld on level %d with addr 0x%lx\n", idx,i, addr);
+    ////printf("DRAM page table index is %ld on level %d with addr 0x%lx\n", idx,i, addr);
 
     if (!(t[idx] & PTE_V))
       return create ? __continue_walk_create(root, addr, &t[idx]) : 0;
 
     t = (pte*) __va(pte_ppn(t[idx]) << RISCV_PAGE_BITS);
-    printf("dram pte* is 0x%lx\n", t);
+    ////printf("dram pte* is 0x%lx\n", t);
   }
 
   return &t[RISCV_GET_PT_INDEX(addr, 3)];
@@ -78,12 +78,12 @@ __walk_internal_nvm(pte* root, uintptr_t addr, int create)
   for (i = 1; i < RISCV_PT_LEVELS; i++)
   {
     size_t idx = RISCV_GET_PT_INDEX(addr, i);
-    printf("NVM page table index is %ld on level %d with addr 0x%lx\n", idx,i, addr);
+    ////printf("NVM page table index is %ld on level %d with addr 0x%lx\n", idx,i, addr);
     if (!(t[idx] & PTE_V))
       return create ? __continue_walk_create_nvm(root, addr, &t[idx]) : 0;
 
     t = (pte*) __va_nvm(pte_ppn(t[idx]) << RISCV_PAGE_BITS);
-    printf("nvm pte* is 0x%lx\n", t);
+    ////printf("nvm pte* is 0x%lx\n", t);
   }
 
   return &t[RISCV_GET_PT_INDEX(addr, 3)];
@@ -143,11 +143,11 @@ alloc_page(uintptr_t vpn, int flags)
   assert(page);
 
   *pte = pte_create(ppn(__pa(page)), flags | PTE_V);
-  printf("alloc page dram new pte 0x%lx, ppn is 0x%lx\n", (uintptr_t)pte, (uintptr_t)ppn(__pa(page)) );
+  //printf("alloc page dram new pte 0x%lx, ppn is 0x%lx\n", (uintptr_t)pte, (uintptr_t)ppn(__pa(page)) );
 #ifdef USE_PAGING
   paging_inc_user_page();
 #endif
-  printf("alloc page dram 0x%lx\n", page);
+  //printf("alloc page dram 0x%lx\n", page);
   return page;
 }
 
@@ -175,11 +175,11 @@ alloc_page_nvm(uintptr_t vpn, int flags)
   assert(page);
 
   *pte = pte_create(ppn(__pa_nvm(page)), flags | PTE_V);
-  printf("alloc page nvm new pte 0x%lx, ppn is 0x%lx\n", (uintptr_t)pte, (uintptr_t)ppn(__pa_nvm(page)) );
+  //printf("alloc page nvm new pte 0x%lx, ppn is 0x%lx\n", (uintptr_t)pte, (uintptr_t)ppn(__pa_nvm(page)) );
 #ifdef USE_PAGING
   paging_inc_user_page();
 #endif
-  printf("alloc page nvm 0x%lx\n", page);
+  //printf("alloc page nvm 0x%lx\n", page);
 
   return page;
 }
@@ -298,7 +298,7 @@ test_va_range(uintptr_t vpn, size_t count){
   /* Validate the region */
   for (i = 0; i < count; i++) {
     pte* pte = __walk_internal(root_page_table, (vpn+i) << RISCV_PAGE_BITS, 0);
-    printf("test_va_range dram pte is 0x%lx\n", pte);
+    //printf("test_va_range dram pte is 0x%lx\n", pte);
     // If the page exists and is valid then we cannot use it
     if(pte && *pte){
       break;
@@ -317,7 +317,7 @@ test_va_range_nvm(uintptr_t vpn, size_t count){
   
     pte* pte = __walk_internal_nvm(root_page_table, (vpn+i) << RISCV_PAGE_BITS, 0);
 
-    printf("test_va_range nvm pte is 0x%lx\n", pte);
+    //printf("test_va_range nvm pte is 0x%lx\n", pte);
     // If the page exists and is valid then we cannot use it
     if(pte && *pte){
       break;
@@ -418,14 +418,14 @@ __map_with_reserved_page_table_64(uintptr_t dram_base,
   
   uintptr_t rootpte = ptd_create(ppn(kernel_va_to_pa(l2_pt)));
   /* set root page table entry */
-  printf("Setting dram root page table entry, index: 0x%lx, ppn: 0x%lx , created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 1), ppn(kernel_va_to_pa(l2_pt)), rootpte);
- // printf("DRAM RISCV_GET_PT_INDEX(ptr, 1) is %d\n", RISCV_GET_PT_INDEX(ptr, 1));
+  //printf("Setting dram root page table entry, index: 0x%lx, ppn: 0x%lx , created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 1), ppn(kernel_va_to_pa(l2_pt)), rootpte);
+ // //printf("DRAM RISCV_GET_PT_INDEX(ptr, 1) is %d\n", RISCV_GET_PT_INDEX(ptr, 1));
   root_page_table[RISCV_GET_PT_INDEX(ptr, 1)] = rootpte;
 
   /* set L2 if it's not leaf */
   if (leaf_pt != l2_pt) {
     uintptr_t l2pte = ptd_create(ppn(kernel_va_to_pa(l3_pt)));
-    printf("Setting dram L2 entry, index: 0x%lx, ppn: 0x%lx, created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 2), ppn(kernel_va_to_pa(l3_pt)), l2pte);
+    //printf("Setting dram L2 entry, index: 0x%lx, ppn: 0x%lx, created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 2), ppn(kernel_va_to_pa(l3_pt)), l2pte);
     l2_pt[RISCV_GET_PT_INDEX(ptr, 2)] = l2pte;
   }
 
@@ -435,7 +435,7 @@ __map_with_reserved_page_table_64(uintptr_t dram_base,
        offset += RISCV_GET_LVL_PGSIZE(leaf_level))
   {
     uintptr_t leafpte =  pte_create(ppn(dram_base + offset), PTE_R | PTE_W | PTE_X | PTE_A | PTE_D);
-    printf("Setting dram leaf entry, index: 0x%lx, ppn: 0x%lx, created pte: 0x%lx\n", RISCV_GET_PT_INDEX(ptr + offset, leaf_level), ppn(dram_base + offset), leafpte);
+    //printf("Setting dram leaf entry, index: 0x%lx, ppn: 0x%lx, created pte: 0x%lx\n", RISCV_GET_PT_INDEX(ptr + offset, leaf_level), ppn(dram_base + offset), leafpte);
     leaf_pt[RISCV_GET_PT_INDEX(ptr + offset, leaf_level)] = leafpte;
   }
 }
@@ -461,29 +461,29 @@ __map_with_reserved_page_table_nvm(uintptr_t nvm_base,
 
   // for(uintptr_t i = 0xffffffff00000000; i < 0xffffffff00f00000; i++){
   //   if(IS_ALIGNED(i, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)) == 1){
-  //     printf("i=0x%lx aligned is %d\n", i, IS_ALIGNED(i, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)));
+  //     //printf("i=0x%lx aligned is %d\n", i, IS_ALIGNED(i, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)));
   //   }
   // }
 
   
-  //printf("IS_ALIGNED(nvm_base, RISCV_GET_LVL_PGSIZE_BITS(leaf_level)) is %d\n", IS_ALIGNED(nvm_base, RISCV_GET_LVL_PGSIZE_BITS(leaf_level)));
+  ////printf("IS_ALIGNED(nvm_base, RISCV_GET_LVL_PGSIZE_BITS(leaf_level)) is %d\n", IS_ALIGNED(nvm_base, RISCV_GET_LVL_PGSIZE_BITS(leaf_level)));
   assert(IS_ALIGNED(nvm_base, RISCV_GET_LVL_PGSIZE_BITS(leaf_level)));
 
-  //printf("nvm base is aligned\n");
-  printf("ptr is 0x%lx\n", ptr);
-  //printf("IS_ALIGNED(ptr, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)) is %d\n", IS_ALIGNED(ptr, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)));
+  ////printf("nvm base is aligned\n");
+  //printf("ptr is 0x%lx\n", ptr);
+  ////printf("IS_ALIGNED(ptr, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)) is %d\n", IS_ALIGNED(ptr, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)));
   assert(IS_ALIGNED(ptr, RISCV_GET_LVL_PGSIZE_BITS(leaf_level - 1)));
 
   uintptr_t rootpte = ptd_create(ppn(kernel_va_to_pa(l2_pt_nvm)));
   /* set root page table entry */
-  printf("Setting nvm root page table entry, index: 0x%lx, ppn: 0x%lx, created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 1), ppn(kernel_va_to_pa(l2_pt_nvm)), rootpte);
-  //printf("NVM RISCV_GET_PT_INDEX(ptr, 1) is %d\n", RISCV_GET_PT_INDEX(ptr, 1));
+  //printf("Setting nvm root page table entry, index: 0x%lx, ppn: 0x%lx, created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 1), ppn(kernel_va_to_pa(l2_pt_nvm)), rootpte);
+  ////printf("NVM RISCV_GET_PT_INDEX(ptr, 1) is %d\n", RISCV_GET_PT_INDEX(ptr, 1));
   root_page_table[RISCV_GET_PT_INDEX(ptr, 1)] = rootpte;
 
   /* set L2 if it's not leaf */
   if (leaf_pt_nvm != l2_pt_nvm) {
     uintptr_t l2pte = ptd_create(ppn(kernel_va_to_pa(l3_pt_nvm)));
-    printf("Setting nvm L2 entry, index: 0x%lx, ppn: 0x%lx, created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 2), ppn(kernel_va_to_pa(l3_pt_nvm)), l2pte);
+    //printf("Setting nvm L2 entry, index: 0x%lx, ppn: 0x%lx, created ptd: 0x%lx\n", RISCV_GET_PT_INDEX(ptr, 2), ppn(kernel_va_to_pa(l3_pt_nvm)), l2pte);
     l2_pt_nvm[RISCV_GET_PT_INDEX(ptr, 2)] = l2pte;
   }
 
@@ -493,11 +493,11 @@ __map_with_reserved_page_table_nvm(uintptr_t nvm_base,
        offset += RISCV_GET_LVL_PGSIZE(leaf_level))
   {
     uintptr_t leafpte = pte_create(ppn(nvm_base + offset), PTE_R | PTE_W | PTE_X | PTE_A | PTE_D);
-    printf("Setting nvm leaf entry, index: 0x%lx, ppn: 0x%lx, created pte: 0x%lx\n", RISCV_GET_PT_INDEX(ptr + offset, leaf_level), ppn(nvm_base + offset), leafpte);
+    //printf("Setting nvm leaf entry, index: 0x%lx, ppn: 0x%lx, created pte: 0x%lx\n", RISCV_GET_PT_INDEX(ptr + offset, leaf_level), ppn(nvm_base + offset), leafpte);
     leaf_pt_nvm[RISCV_GET_PT_INDEX(ptr + offset, leaf_level)] = leafpte;
   }
 
-  printf("Finished nvm leaf entry\n");
+  //printf("Finished nvm leaf entry\n");
 }
 
 void

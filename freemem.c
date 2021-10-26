@@ -109,7 +109,7 @@ spa_put(uintptr_t page_addr)
   uintptr_t prev;
 
   assert(IS_ALIGNED(page_addr, RISCV_PAGE_BITS));
-  printf("[MY_RUNTIME] spa_put() page_addr: 0x%x \n", page_addr);
+ // printf("[MY_RUNTIME] spa_put() page_addr: 0x%x \n", page_addr);
 
   assert(page_addr >= EYRIE_LOAD_START && page_addr < (freemem_va_start  + freemem_size));
 
@@ -135,7 +135,7 @@ spa_put_nvm(uintptr_t page_addr)
   uintptr_t prev;
 
   assert(IS_ALIGNED(page_addr, RISCV_PAGE_BITS));
-  printf("[MY_RUNTIME] spa_put_nvm() page_addr: 0x%x \n", page_addr);
+ // printf("[MY_RUNTIME] spa_put_nvm() page_addr: 0x%x \n", page_addr);
   //assert(page_addr >= EYRIE_LOAD_START && page_addr < (freemem_va_start  + freemem_size));
 
   if (!LIST_EMPTY(spa_free_pages_nvm)) {
@@ -195,7 +195,7 @@ spa_init(uintptr_t base, size_t size)
       cur += RISCV_PAGE_SIZE) {
     spa_put(cur);
   }
-  printf("spa_init() DRAM Free pages: %d \n", spa_free_pages.count);
+  //printf("spa_init() DRAM Free pages: %d \n", spa_free_pages.count);
 
 }
 

@@ -146,7 +146,7 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
 
   nvm_size_global = nvm_size;
 
-  uintptr_t dram_tmp = dram_size;
+  //uintptr_t dram_tmp = dram_size;
 
   dram_size = dram_size - nvm_size;
 
@@ -159,8 +159,13 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   runtime_va_start = (uintptr_t) &rt_base;
   kernel_offset = runtime_va_start - runtime_paddr;
 
+<<<<<<< Updated upstream
   printf("UTM : 0x%lx-0x%lx (%u KB)\n", utm_vaddr, utm_vaddr+utm_size, utm_size/1024);
   printf("Original DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_tmp, dram_tmp/1024);
+=======
+  //printf("UTM : 0x%lx-0x%lx (%u KB)\n", utm_vaddr, utm_vaddr+utm_size, utm_size/1024);
+  //printf("DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_tmp, dram_tmp/1024);
+>>>>>>> Stashed changes
 
   printf("DRAM after giving portion to NVM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_size, dram_size/1024);
 
@@ -172,9 +177,9 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
 
 //  debug("FREE: 0x%lx-0x%lx (%u KB), va 0x%lx", free_paddr, dram_base + dram_size, freemem_size/1024, freemem_va_start);
 
-  printf("FREE: 0x%lx-0x%lx (%u KB), va 0x%lx\n", free_paddr, dram_base + dram_size, freemem_size/1024, freemem_va_start);
-  printf("EYRIE_LOAD_START = 0x%lx\n", EYRIE_LOAD_START);
-  printf("VA of DRAM end = 0x%lx\n", __va(dram_base + dram_size));
+  //printf("FREE: 0x%lx-0x%lx (%u KB), va 0x%lx\n", free_paddr, dram_base + dram_size, freemem_size/1024, freemem_va_start);
+  //printf("EYRIE_LOAD_START = 0x%lx\n", EYRIE_LOAD_START);
+  //printf("VA of DRAM end = 0x%lx\n", __va(dram_base + dram_size));
 
   load_pa_start_nvm = nvm_base;
   printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);

@@ -99,6 +99,21 @@ uintptr_t linux_uname(void* buf){
   return ret;
 }
 
+<<<<<<< Updated upstream
+=======
+
+
+
+uintptr_t syscall_nvmcreate(uintptr_t addr, size_t size){
+ // printf("[RUNTIME] Called NVMcreate, received addr: 0x%lx, size: 0x%lx\n", addr, size);
+ // sbi_nvmcreate(addr, size);
+  printf("[RUNTIME] Time: %ld \n", addr);
+  uintptr_t ret = 1;
+  return ret;
+
+}
+
+>>>>>>> Stashed changes
 uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){
   uintptr_t ret = (uintptr_t)((void*)-1);
 
