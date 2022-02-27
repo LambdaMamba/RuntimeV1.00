@@ -86,6 +86,18 @@ copy_root_page_table()
   }
 }
 
+void nvm_reboot(){
+  load_pa_start_nvm = nvm_base;
+  printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
+  map_physical_memory_nvm(nvm_base, nvm_size);
+  init_freemem_nvm();
+
+
+  
+  //printf("Runtime_paddr: 0x%lx, User_paddr: 0x%lx, user_paddr - runtime_paddr: 0x%lx\n", runtime_paddr, user_paddr, user_paddr - runtime_paddr);
+
+}
+
 /* initialize free memory with a simple page allocator*/
 void
 init_freemem()
@@ -143,16 +155,16 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
 
     //~~~ for now, pretend an eigth and a bit of dram is nvm ~~~
   //nvm_size = (dram_size/8) ;
-  nvm_size = 0;
+  //nvm_size = 0;
 
-  nvm_size_global = nvm_size;
+  //nvm_size_global = nvm_size;
 
-  uintptr_t dram_tmp = dram_size;
+  //uintptr_t dram_tmp = dram_size;
 
-  dram_size = dram_size - nvm_size;
+  //dram_size = dram_size - nvm_size;
 
   //~~~ nvm_base is right after dram region ~~~
-  nvm_base = (dram_base + dram_size);
+  //nvm_base = (dram_base + dram_size);
 
 
   shared_buffer = utm_vaddr;
@@ -177,7 +189,7 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   printf("EYRIE_LOAD_START = 0x%lx\n", EYRIE_LOAD_START);
   printf("VA of DRAM end = 0x%lx\n", __va(dram_base + dram_size));
 
-  load_pa_start_nvm = nvm_base;
+  //load_pa_start_nvm = nvm_base;
   //printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
 
   /* remap kernel VA */

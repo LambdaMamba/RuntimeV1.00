@@ -104,10 +104,11 @@ uintptr_t linux_uname(void* buf){
 
 uintptr_t syscall_nvmcreate(uintptr_t addr, size_t size){
   printf("[RUNTIME] Called NVMcreate, received addr: 0x%lx, size: 0x%lx\n", addr, size);
-  sbi_nvmcreate(addr, size);
+  unsigned long retsize = sbi_nvmcreate(addr, size);
+  printf("back from NVM Create!!!!!!!!!!!!!!\n");
+  printf("[RUNTIME] Returned from NVM_Create, allocated between: 0x%lx - 0x%lx \n", addr, retsize);
   uintptr_t ret = 1;
   return ret;
-
 }
 
 uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){
@@ -125,7 +126,7 @@ uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){
     free_pages_nvm(vpn(addr), length/RISCV_PAGE_SIZE);
     ret = 0;
     printf("After munmap %d NVM pages available\n", spa_available_nvm());
-    printf("After munmap, DRAM Mapping VA is 0x%lx, PA is 0x%lx (there is no mapping)\n", addr, translate_nvm(addr));
+    printf("After munmap, NVM Mapping VA is 0x%lx, PA is 0x%lx (there is no mapping)\n", addr, translate_nvm(addr));
     
   }
   return ret;
