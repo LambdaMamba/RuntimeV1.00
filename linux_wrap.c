@@ -13,6 +13,7 @@
 #include "rt_util.h"
 #include "syscall.h"
 #include "uaccess.h"
+#include "boot.h"
 
 #define CLOCK_FREQ 1000000000
 
@@ -105,10 +106,13 @@ uintptr_t linux_uname(void* buf){
 uintptr_t syscall_nvmcreate(uintptr_t addr, size_t size){
   printf("[RUNTIME] Called NVMcreate, received addr: 0x%lx, size: 0x%lx\n", addr, size);
   unsigned long retsize = sbi_nvmcreate(addr, size);
-  printf("back from NVM Create!!!!!!!!!!!!!!\n");
-  printf("[RUNTIME] Returned from NVM_Create, allocated between: 0x%lx - 0x%lx \n", addr, retsize);
-  uintptr_t ret = 1;
-  return ret;
+  if (retsize == 0){
+    printf("[RUNTIME] NVM_create failed\n");
+    return 0;
+  } 
+  printf("[RUNTIME] Returned from NVM_Create, allocated between: 0x%lx - 0x%lx \n", addr, addr + retsize);
+  nvm_reboot(addr, size);
+  return 1;
 }
 
 uintptr_t syscall_munmap(uintptr_t addr, size_t length, int fd){

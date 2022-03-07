@@ -1,0 +1,1 @@
+void nvm_reboot(unsigned long addr, size_t size);

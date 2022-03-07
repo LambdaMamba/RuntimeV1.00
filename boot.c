@@ -10,7 +10,7 @@
 #include "mm.h"
 #include "env.h"
 #include "paging.h"
-
+#include "boot.h"
 /* defined in vm.h */
 extern uintptr_t shared_buffer;
 extern uintptr_t shared_buffer_size;
@@ -86,18 +86,6 @@ copy_root_page_table()
   }
 }
 
-void nvm_reboot(){
-  load_pa_start_nvm = nvm_base;
-  printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
-  map_physical_memory_nvm(nvm_base, nvm_size);
-  init_freemem_nvm();
-
-
-  
-  //printf("Runtime_paddr: 0x%lx, User_paddr: 0x%lx, user_paddr - runtime_paddr: 0x%lx\n", runtime_paddr, user_paddr, user_paddr - runtime_paddr);
-
-}
-
 /* initialize free memory with a simple page allocator*/
 void
 init_freemem()
@@ -105,13 +93,18 @@ init_freemem()
   spa_init(freemem_va_start, freemem_size);
 }
 
-void
-init_freemem_nvm()
-{
+
+void nvm_reboot(unsigned long addr, size_t size){
+  //uintptr_t load_pa_start_nvm = nvm_base;
+  printf("NVM_LOAD_START = 0x%lx\n", NVM_LOAD_START);
+  map_physical_memory_nvm(nvm_base, nvm_size);
   spa_init_nvm(NVM_LOAD_START, nvm_size);
+  printf("[RUNTIME] Finished initializing NVM freemem\n");
 }
 
+
 #endif // USE_FREEMEM
+
 
 /* initialize user stack */
 void
@@ -173,7 +166,7 @@ eyrie_boot(uintptr_t dummy, // $a0 contains the return value from the SBI
   kernel_offset = runtime_va_start - runtime_paddr;
 
   printf("UTM : 0x%lx-0x%lx (%u KB)\n", utm_vaddr, utm_vaddr+utm_size, utm_size/1024);
-  printf("DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_tmp, dram_tmp/1024);
+  printf("DRAM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_size, dram_size/1024);
 
  // printf("DRAM after giving portion to NVM: 0x%lx-0x%lx (%u KB)\n", dram_base, dram_base + dram_size, dram_size/1024);
 
